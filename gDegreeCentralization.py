@@ -11,15 +11,15 @@ def delete_vertex(v_ID):
     global GDC_score,k
     GDC_gain=vertex_score(v_ID)
     for i in G.GetNI(v_ID).GetOutEdges():
-        reduce_vertex(i)
+        decreaseContribution(i)
         node_domin[i]=True
         edges_to_i = [ii for ii in G.GetNI(i).GetInEdges()]
         edges_to_i.remove(v_ID)
         for j in edges_to_i:
-            reduce_vertex(j)
+            decreaseContribution(j)
             G.DelEdge(j,i)
     for i in G.GetNI(v_ID).GetInEdges():
-        reduce_vertex(i)
+        decreaseContribution(i)
     remove_from_contr_list(v_ID,GDC_gain)
     G.DelNode(v_ID)
     if best_contribution==-1:
@@ -29,25 +29,25 @@ def delete_vertex(v_ID):
     return GDC_score
 
 def take_best():
-    return delete_vertex(contr[best_contribution].__iter__().next())
+    return delete_vertex(histogram[best_contribution].__iter__().next())
 
-def reduce_vertex(v):  # for managing contribution table; O(1)
+def decreaseContribution(v):  # for managing contribution table; O(1)
     contribution = vertex_score(v)
     remove_from_contr_list(v,contribution)
     add_to_contr_list(v,contribution-1)
 
 def add_to_contr_list(v,score): #for managing contribution table; O(1)
-    if score not in contr.keys():
-        contr[score]=set([v])
+    if score not in histogram.keys():
+        histogram[score]=set([v])
     else:
-        contr[score].add(v)
+        histogram[score].add(v)
 
 def remove_from_contr_list(v,score): #for managing contribution table; O(1)
-    contr[score].remove(v)
-    if contr[score]==set():
-        contr.pop(score)
+    histogram[score].remove(v)
+    if histogram[score]==set():
+        histogram.pop(score)
         global best_contribution
-        best_contribution = max(contr.keys())
+        best_contribution = max(histogram.keys())
 
 def vertex_score(v):
     return G.GetNI(v).GetOutDeg() - (1 if node_domin[v] else 0)
@@ -70,7 +70,7 @@ G = snap.LoadEdgeList(snap.PNGraph, file+".txt", 0, 1)
 
 print("done\n\nNow removing loops...")
 remove_loops(G)
-contr = {}
+histogram = {}
 S=[]
 node_domin = {}
 dominated = False
@@ -80,21 +80,21 @@ for i in G.Nodes():
     node_domin[i.GetId()]=False
     outdegree = i.GetOutDeg()
     add_to_contr_list(i.GetId(),outdegree)
-best_contribution = max(contr.keys())
+best_contribution = max(histogram.keys())
 
 
 # centralization things WITH DENOMINATOR
 n=G.GetNodes()
 k=0
-degree_distribution = {i:len(contr[i]) for i in contr}
-sum_vector={i:1/float(n-1) for i in contr}
+degree_distribution = {i:len(histogram[i]) for i in histogram}
+sum_vector={i:1/float(n-1) for i in histogram}
 
 print("done.\n\nBegin testing...")  # testing
 with open(file+"_output.txt", "w") as f:
     while not dominated:
         k=k+1
         take_best()
-        fixABDsum_vector()
+        updateCentralizationVariables()
         centralization = A*centrality+B-C
         f.write(str(centralization)+"\n")
 print("done.")

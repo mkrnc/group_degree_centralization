@@ -1,4 +1,4 @@
-import snap
+import snap  # a working package Snap.py is assumed
 
 def remove_loops(G):
     for i in G.Nodes():

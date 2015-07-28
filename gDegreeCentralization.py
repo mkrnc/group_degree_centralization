@@ -8,7 +8,7 @@ def remove_loops(G):
 
 def delete_vertex(v_ID):
     S.append(v_ID)
-    global GDC_score,k
+    global centrality,k
     GDC_gain=vertex_score(v_ID)
     for i in G.GetNI(v_ID).GetOutEdges():
         decreaseContribution(i)
@@ -25,8 +25,8 @@ def delete_vertex(v_ID):
     if best_contribution==-1:
         global dominated
         dominated = True
-    GDC_score+=GDC_gain
-    return GDC_score
+    centrality+=GDC_gain
+    return centrality
 
 def take_best():
     return delete_vertex(histogram[best_contribution].__iter__().next())
@@ -74,7 +74,7 @@ histogram = {}
 S=[]
 node_domin = {}
 dominated = False
-GDC_score = 0
+centrality = 0
 print("done.\n\nSetting up degree distribution...")
 for i in G.Nodes():
     node_domin[i.GetId()]=False
